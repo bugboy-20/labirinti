@@ -141,14 +141,83 @@ def labirinto(dimx, dimy, inx, iny, outx, outy):
 
             
             ci = ci + 1
-            # if ci % 10 == 0:
-            #     #Call DisegnaPercorso
-            #     #Call RiduciIsole
-            #     Call RiduciVicini
+            #ottimizzazioni
+            if ci % 10 == 0:
+                #Call DisegnaPercorso
+
+                #Qui analizza i vicini e trova il valore minore tra i maggiori confinanti con un buco
+                ma = 0
+                for x in range(1, dimx):
+                    for y in range(1, dimy):
+                        if arr[x][y] == "":
+                            
+                            #qui calcola i vicini
+                            f1 = arr[x + 1][y]
+                            f2 = arr[x][y + 1]
+                            f3 = arr[x - 1][y]
+                            f4 = arr[x][y - 1]
+                            u = 0
+                            if f1 == "":
+                                u = u + 1
+                                f1 = 0
+                            if f2 == "":
+                                u = u + 1
+                                f2 = 0
+                            if f3 == "":
+                                u = u + 1
+                                f3 = 0
+                            if f4 == "":
+                                u = u + 1
+                                f4 = 0
+                            
+                            if (x == outx and y == outy):
+                                umax = 0
+                            else:
+                                umax = 1
+                            if u <= umax:
+                                v = max(f1, f2, f3, f4)
+                                if ma == 0 or v < ma:
+                                    ma = v
+
+                #indietreggia
+                if ma != 0:
+                    while ta > ma:
+                        m = mov[ta - 1]
+                        if m == 1:
+                            lab[px][py] = 0
+                            mov[ta] = 0
+                            arr[px][py] = ""
+                            #Call Disegna
+                            ta = ta - 1
+                            px = px - 1
+                        elif m == 2:
+                            lab[px][py] = 0
+                            mov[ta] = 0
+                            arr[px][py] = ""
+                            #Call Disegna
+                            ta = ta - 1
+                            py = py - 1
+                        elif m == 3:
+                            lab[px][py] = 0
+                            mov[ta] = 0
+                            arr[px][py] = ""
+                            #Call Disegna
+                            ta = ta - 1
+                            px = px + 1
+                        elif m == 4:
+                            lab[px][py] = 0
+                            mov[ta] = 0
+                            arr[px][py] = ""
+                            #Call Disegna
+                            ta = ta - 1
+                            py = py + 1
+                        else:
+                            print("ANTANI")
+                            return
+
             # if ci % 100 == 0:
             #     #Call DisegnaPercorso
             #     Call RiduciIsole
-            #     #Call RiduciVicini
             
             indietro = False
 
@@ -159,109 +228,13 @@ def labirinto(dimx, dimy, inx, iny, outx, outy):
 
 
 
-""" 
-
-Private Sub RiduciVicini()
-
-'Qui analizza i vicini e trova il valore minore tra i maggiori confinanti con un buco
-
-ma = 0
-For x = 1 To dimx
-    For y = 1 To dimy
-        if arr(x, y) = "" Then
-            
-            'qui calcola i vicini
-            f1 = arr(x + 1, y)
-            f2 = arr(x, y + 1)
-            f3 = arr(x - 1, y)
-            f4 = arr(x, y - 1)
-            u = 0
-            if f1 = "" Then u = u + 1
-            if f2 = "" Then u = u + 1
-            if f3 = "" Then u = u + 1
-            if f4 = "" Then u = u + 1
-            if f1 = "" Then f1 = 0
-            if f2 = "" Then f2 = 0
-            if f3 = "" Then f3 = 0
-            if f4 = "" Then f4 = 0
-            
-            if (x = outx and y = outy) Then umax = 0 else umax = 1
-            if u <= umax Then
-                v = Max(f1, f2, f3, f4)
-                if ma = 0 Or v < ma Then
-                    ma = v
-                '    if ma = f1 Then
-                '        md = 3
-                '    elif ma = f2 Then
-                '        md = 4
-                '    elif ma = f3 Then
-                '        md = 1
-                '    elif ma = f3 Then
-                '        md = 2
-                '    else
-                '        md = 0
-                '    End if
-                End if
-            End if
-                    
-        End if
-    Next
-Next
-'Range("AN1") = ma
-'Range("AN2") = md
-
-'indietreggia
-if ma <> 0 Then
-
-While ta > ma
-    Select Case mov(ta - 1)
-    Case 1
-        lab(px, py) = 0
-        mov(ta) = 0
-        arr(px, py) = ""
-        'Call Disegna
-        ta = ta - 1
-        px = px - 1
-    Case 2
-        lab(px, py) = 0
-        mov(ta) = 0
-        arr(px, py) = ""
-        'Call Disegna
-        ta = ta - 1
-        py = py - 1
-    Case 3
-        lab(px, py) = 0
-        mov(ta) = 0
-        arr(px, py) = ""
-        'Call Disegna
-        ta = ta - 1
-        px = px + 1
-    Case 4
-        lab(px, py) = 0
-        mov(ta) = 0
-        arr(px, py) = ""
-        'Call Disegna
-        ta = ta - 1
-        py = py + 1
-    Case else
-         MsgBox "ANTANI"
-    Exit Sub
-    End Select
-Wend
-End if
-
-
-End Sub
 
 
 
 
-
+"""
 
 Private Sub RiduciIsole()
-
-
-'Range("z1..ah9") = arr
 
 'Qui analizza i buchi e trova il valore minore tra i maggiori confinanti con un buco
 'copia l 'array
@@ -328,7 +301,7 @@ End if
 
 End Sub
 
-Private Function floodfill(aa, x, y)
+def floodfill(aa, x, y)
 
 if aa(x, y) = -1 Then
     floodfill = 0
@@ -344,21 +317,15 @@ else
 End if
 End Function
 
-function max(a,b,c,d)
-	m=a
-	if b>m then m=b
-	if c>m then m=c
-	if d>m then m=d	
-end function
- """
+"""
 
 
 
 
 if __name__ == '__main__':
-    #labirinto(6, 6, 4, 6, 3, 6) #948 9
+    #labirinto(6, 6, 4, 6, 3, 6) #948 9 1
     #labirinto(8, 8, 1, 4, 1, 5)
     #labirinto(7, 7, 1, 1, 7, 7)
     #labirinto(6, 6, 1, 1, 6, 1) #1770 19
-    labirinto(6, 8, 1, 1, 6, 1)
+    labirinto(6, 8, 1, 1, 6, 1) #59946 ? 271
 
