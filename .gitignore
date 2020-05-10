@@ -1,2 +1,4 @@
 *.part
 labs/
+.vscode/
+
