@@ -4,18 +4,22 @@ from datetime import datetime
 import os
 
 
-def labirinto(dimx, dimy, inx, iny, outx, outy):
-    os.makedirs("labs", exist_ok=True)
-    fname = "labs/" + "-".join(str(x) for x in [dimx, dimy, inx, iny, outx, outy]) + ".lab"
-    
-    print("Labyrint " + " ".join(str(x) for x in [dimx, dimy, inx, iny, outx, outy]))
+def labirinto(labdef):
+    fol = "labs/" + "-".join(str(x) for x in getbase(labdef))
+    os.makedirs(fol, exist_ok=True)  
+    fname = fol + "/" + "-".join(str(x) for x in labdef) + ".lab"
+
+    print("Labyrint " + " ".join(str(x) for x in labdef))
+
     if os.path.exists(fname):
        print("Existing. Skip")
        return
 
+    dimx, dimy, inx, iny, outx, outy = labdef
+
     orai = datetime.now()
-    lout = 0
-        
+    lout = 0    
+
     #Creates array with directions
     lab = [[0 for i in range(dimy + 2)] for j in range(dimx + 2)]
     for a in range(0, dimx + 1):
@@ -268,11 +272,6 @@ def labirinto(dimx, dimy, inx, iny, outx, outy):
     print("Fine " + str(lout) + " " + str((datetime.now() - orai).seconds))
 
 
-
-
-
-
-
 def floodfill(aa, x, y):
 
     if aa[x][y] == -1:
@@ -289,51 +288,161 @@ def floodfill(aa, x, y):
 
 
 
+
+
+
+
+
+def genpopular(ax, ay):
+    evenx = (ax % 2 == 0)
+    eveny = (ay % 2 == 0)
+    l=[]
+
+    l.append([ax, ay, 1, 1, ax, 1]) #CornerX
+    l.append([ax, ay, 1, 1, 1, ay]) #CornerY
+    l.append([ax, ay, 1, 1, 2, 1]) #SideX
+    l.append([ax, ay, 1, 1, 1, 2]) #SideY
+
+    if evenx:
+        l.append([ax, ay, ax//2, 1, ax//2+1, 1]) #CloseX
+    else:
+        l.append([ax, ay, (ax+1)//2, 1, (ax+1)//2, ay]) #CenterX
+    
+
+    if eveny:
+        l.append([ax, ay, 1, ay//2, 1, ay//2+1]) #CloseY
+    else:
+        l.append([ax, ay, 1, (ay+1)//2, ax, (ay+1)//2]) #CenterY
+        
+
+    if not (evenx and eveny): #at least 1 odd
+        l.append([ax, ay, 1, 1, ax, ay]) #Diagonal
+
+    # if not (evenx or eveny): #both odd
+        l.append([ax, ay, 1, 1, (ax+1)//2, (ay+1)//2]) #Center
+    #     l.append([ax, ay, (ax+1)//2, 1, (ax+1)//2, (ay+1)//2]) #CenterSideX
+    #     l.append([ax, ay, 1, (ay+1)//2, (ax+1)//2, (ay+1)//2]) #CenterSideY
+
+    r = sorted(labuniq([getbase(x) for x in labuniq(l)]))
+    return(r)
+
+
+
+def labuniq(lab):
+    res = [] 
+    [res.append(x) for x in lab if x not in res]
+    return(res)
+
+
+# def genfriends2(lab):
+#     dimx, dimy, inx, iny, outx, outy = lab
+#     l=[]
+
+#     l.append([dimx, dimy, inx, iny, outx, outy])
+#     l.append([dimx, dimy, dimx - inx + 1, iny, dimx - outx + 1, outy])
+#     l.append([dimx, dimy, dimx - inx + 1, dimy - iny + 1, dimx - outx + 1, dimy - outy + 1])
+#     l.append([dimx, dimy, inx, dimy - iny + 1, outx, dimy - outy + 1])
+
+#     l.append([dimx, dimy, outx, outy, inx, iny])
+#     l.append([dimx, dimy, dimx - outx + 1, outy, dimx - inx + 1, iny])
+#     l.append([dimx, dimy, dimx - outx + 1, dimy - outy + 1, dimx - inx + 1, dimy - iny + 1])
+#     l.append([dimx, dimy, outx, dimy - outy + 1, inx, dimy - iny + 1])
+    
+
+#     l.append([dimy, dimx, iny, inx, outy, outx])
+#     l.append([dimy, dimx, dimy - iny + 1, inx, dimy - outy + 1, outx])
+#     l.append([dimy, dimx, dimy - iny + 1, dimx - inx + 1, dimy - outy + 1, dimx - outx + 1])
+#     l.append([dimy, dimx, iny, dimx - inx + 1, outy, dimx - outx + 1])
+
+#     l.append([dimy, dimx, outy, outx, iny, inx])
+#     l.append([dimy, dimx, dimy - outy + 1, outx, dimy - iny + 1, inx])
+#     l.append([dimy, dimx, dimy - outy + 1, dimx - outx + 1, dimy - iny + 1, dimx - inx + 1])
+#     l.append([dimy, dimx, outy, dimx - outx + 1, iny, dimx - inx + 1])
+
+#     return(sorted(labuniq(l)))
+
+def genfriends(lab):
+    l=[]
+
+    for x in range(0,16):
+        l.append(transformlab(lab,x&1,x&2,x&4,x&8))
+
+    return(sorted(labuniq(l)))
+
+def getbase(lab):
+    return(sorted(labuniq(genfriends(lab)))[0])
+
+
+def transformlab(lab, flh = False, flv = False, inv = False, ro = False):
+    dimx, dimy, inx, iny, outx, outy = lab
+    if flh:
+        dimx, dimy, inx, iny, outx, outy = dimx, dimy, dimx - inx + 1, iny, dimx - outx + 1, outy
+    if flv:
+        dimx, dimy, inx, iny, outx, outy = dimx, dimy, inx, dimy - iny + 1, outx, dimy - outy + 1
+    if inv:
+        dimx, dimy, inx, iny, outx, outy = dimx, dimy, outx, outy, inx, iny
+    if ro:
+        dimx, dimy, inx, iny, outx, outy = dimy, dimx, iny, inx, outy, outx
+    return([dimx, dimy, inx, iny, outx, outy])
+
+
+def transformdata(lab, flh = False, flv = False, inv = False, ro = False):
+    fol = "labs/" + "-".join(str(x) for x in getbase(lab))
+    fname = fol + "/" + "-".join(str(x) for x in lab) + ".lab"
+
+    with open(fname) as f:
+        l=[]
+        for s in f.readlines():
+            if flh:
+                s = s.translate(str.maketrans({'1':'3', '3':'1'}))
+            if flv:
+                s = s.translate(str.maketrans({'2':'4', '4':'2'}))
+            if inv:
+                s = s.translate(str.maketrans({'1':'3', '2':'4', '3':'1', '4':'2'}))[::-1]
+            if ro:
+                s = s.translate(str.maketrans({'1':'2', '2':'1', '3':'4', '4':'3'}))
+            l.append(s)
+
+        l.sort()
+
+        fname = fol + "/" + "-".join(str(x) for x in transformlab(lab, flh, flv, inv, ro)) + ".lab"
+        with open(fname, 'w') as f:
+            f.writelines(l)
+
+
 if __name__ == '__main__':
+    # sidesum = 16
+    # l=[]
+    # for ax in range(5, sidesum - 3):
+    #     for ay in range(ax, sidesum - ax + 1):
+    #         print(ax, ay)
+    #         l = l + genpopular(ax, ay)
 
-    labirinto(6, 6, 4, 6, 3, 6) # 948 0
-
-    # labirinto(3, 3, 1, 1, 3, 3)
-    # labirinto(3, 3, 1, 1, 1, 3)
-    # labirinto(4, 4, 1, 1, 1, 4)
-    # labirinto(4, 4, 1, 2, 1, 3)
-    # labirinto(5, 5, 1, 1, 1, 5)
-    # labirinto(5, 5, 1, 1, 5, 5)
-    # labirinto(5, 5, 1, 1, 3, 3)
-    # labirinto(5, 5, 1, 3, 5, 3)
-   
-    # labirinto(7, 7, 1, 1, 7, 7) # 111712 97
-    # labirinto(6, 6, 1, 1, 6, 1) # 1770 2
-    # labirinto(6, 8, 1, 1, 6, 1) # 59946
-    # labirinto(4, 12, 1, 1, 4, 1) # 15024 6
-    # labirinto(5, 9, 1, 1, 5, 1) # 10444 7
-    # labirinto(5, 9, 1, 1, 1, 9) # 28002 13
-    # labirinto(5, 9, 1, 1, 5, 9) # 28417 13
-
-    #test big more big
-    # labirinto(8, 8, 1, 4, 1, 5) # 3199463 2762 ??? to be fixed
-    # labirinto(8, 8, 4, 1, 5, 1) # 2910720 2356# ??? to be fixed
-
-
-    #test derived
-    # labirinto(6, 8, 1, 1, 2, 1) # 22866 ???? to be fixed
-    # labirinto(6, 8, 6, 1, 5, 1) # 32675
-    # labirinto(6, 8, 6, 8, 5, 8) # 32675
-    # labirinto(6, 8, 1, 8, 2, 8) # 32675
-
-    # labirinto(8, 6, 1, 1, 1, 2) # 32675
-    # labirinto(8, 6, 1, 6, 1, 5) # 32675
-    # labirinto(8, 6, 8, 6, 8, 5) # 32675
-    # labirinto(8, 6, 8, 1, 8, 2) # 32675
-
-    # labirinto(6, 8, 2, 1, 1, 1) # 32675
-    # labirinto(6, 8, 5, 1, 6, 1) # 32675
-    # labirinto(6, 8, 5, 8, 6, 8) # 32675
-    # labirinto(6, 8, 2, 8, 1, 8) # 32675
-
-    # labirinto(8, 6, 1, 2, 1, 1) # 32675
-    # labirinto(8, 6, 1, 5, 1, 6) # 32675
-    # labirinto(8, 6, 8, 5, 8, 6) # 32675
-    # labirinto(8, 6, 8, 2, 8, 1) # 32675
+    # for m in l:
+    #     l = l + genfriends(m)
+    # l = sorted(labuniq(l))
 
     
+
+    #test friends errors
+    # l = genfriends([7,7,1,1,7,7]) #ok
+    # l = genfriends([6,8,1,1,1,8]) #ok
+    # l = genfriends([6,8,1,1,2,1]) #err
+    # l = genfriends([6,6,4,6,3,6]) #err
+    # l = genfriends([7,7,1,1,4,4]) #ok
+
+    
+    
+    # print ('\n'.join([str(x) for x in l]))
+
+    # for arrlab in l:
+    #     labirinto(arrlab)
+
+    # lab = [4,4,2,1,1,1]
+    lab = [6,8,1,8,2,8]
+    labirinto(lab)
+    transformdata(lab, 0, 1, 1, 0)
+
+    for x in range(1,16):
+        print(transformlab(lab,x&1,x&2,x&4,x&8))
+        transformdata(lab,x&1,x&2,x&4,x&8)
