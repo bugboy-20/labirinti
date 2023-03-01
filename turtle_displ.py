@@ -13,6 +13,8 @@ t.turtlesize(1)
 t.hideturtle()
 t.speed(10)
 
+t.left(90) #pointing to the top by default
+
 for d in path:
     if d == 1:
         t.right(90)
