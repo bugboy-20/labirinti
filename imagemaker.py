@@ -127,20 +127,39 @@ def wall(x,y,d):
 def wall_str(w):
     return str(w[0][0]) + "," + str(w[0][1]) + " " + str(w[1][0]) + "," + str(w[1][1])
 
-def pathpoligon(i=0):
+def pathpoligon(x,y,i=0):
+    if i==len(path):
+        return []
+
     d=path[i]
-    path.pop
+
+
+    w1 = [*wall(x,y,(d-1)%4)]
+    w2 = [*wall(x,y,(d+1)%4)]
+
+    
+    x,y = move(d,x,y)
+    p = pathpoligon(x,y,i+1)
+    w1 = w1 + p + w2
+    return w1
+
+    
 
 
 
 def svg_maker(scale):
+    p = pathpoligon(sx,sy)
+
     out = "<svg width=\"" + str(w*scale) + "\" height=\"" + str(h*scale) + "\">"
+    out += "<polygon points=\""
 
-    for m in path:
-        print(m)
+    for i in p:
+        x,y = i
+        out += str(x*scale) + "," + str(y*scale) + " "
 
 
-
+    out += "\" style=\"fill:none;stroke:purple;stroke-width:1\" />"
+    out += "<rect width=\"600\" height=\"800\" style=\"fill:none;stroke:purple;stroke-width:1\">"
     out += "</svg>"
     return out
 
